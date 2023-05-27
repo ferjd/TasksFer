@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+   <h1 class="text-center mt-4">Lista de Tareas</h1>
+   <table class="table table-borderless text-light">
+       <thead class="thead-dark">
+           <tr>
+               <th scope="col">Tarea</th>
+               <th scope="col">Usuario Original</th>
+               <th scope="col">Usuario Delegado</th>
+               <th scope="col">Estado</th>
+               <th scope="col">Urg</th>
+               <th scope="col">Imp</th>
+               <th scope="col">Observaciones</th>
+               <th scope="col">Acciones</th>
+           </tr>
+       </thead>
+       <tbody>
+           {% for task in tasks %}
+           <tr>
+               <td>{{ task.title }}</td>
+               <td>{{ task.created_by.username }}</td>
+               <td>
+                   <form method="POST" action="{% url 'task_list' %}" class="d-inline">
+                       {% csrf_token %}
+                       <input type="hidden" name="task_id" value="{{ task.id }}">
+                       <select name="delegated_to" class="form-control form-control-sm" onchange="this.form.submit()">
+                           <option value="">Ninguno</option>
+                           {% for user in users %}
+                           <option value="{{ user.id }}" {% if task.delegated_to == user %}selected{% endif %}>{{ user.username }}</option>
+                           {% endfor %}
+                       </select>
+                   </form>
+               </td>
+               <td>
+                   <form method="POST" action="{% url 'update_status' task.id %}" class="d-inline">
+                       {% csrf_token %}
+                       <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+                           {% for choice in status_choices %}
+                               <option value="{{ choice.0 }}" {% if choice.0 == task.status %}selected{% endif %}>{{ choice.1 }}</option>
+                           {% endfor %}
+                       </select>
+                   </form>
+               </td>
+               <td>
+                   <form method="POST" action="{% url 'update_urgency' task.id %}" class="d-inline">
+                       {% csrf_token %}
+                       <select name="urgency" class="form-control form-control-sm" onchange="this.form.submit()">
+                           {% for choice in priority_choices %}
+                               <option value="{{ choice.0 }}" {% if choice.0 == task.urgency %}selected{% endif %}>{{ choice.1 }}</option>
+                           {% endfor %}
+                       </select>
+                   </form>
+               </td>
+               <td>
+                   <form method="POST" action="{% url 'update_importance' task.id %}" class="d-inline">
+                       {% csrf_token %}
+                       <select name="importance" class="form-control form-control-sm" onchange="this.form.submit()">
+                           {% for choice in priority_choices %}
+                               <option value="{{ choice.0 }}" {% if choice.0 == task.importance %}selected{% endif %}>{{ choice.1 }}</option>
+                           {% endfor %}
+                       </select>
+                   </form>
+               </td>
+               <td>
+                   <form method="POST" action="{% url 'update_observations' task.id %}" class="d-inline">
+                       {% csrf_token %}
+                       <input type="text" name="observations" class="form-control form-control-sm" onchange="this.form.submit()" value="{{ task.observations }}">
+                   </form>
+               </td>
+               <td>
+                   <a href="{% url 'delete_task' task.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+               </td>
+           </tr>
+           {% endfor %}
+       </tbody>
+   </table>
+   <a href="{% url 'create_task' %}" class="btn btn-primary mt-3">Agregar Tarea</a>
+</div>
+{% endblock %}
